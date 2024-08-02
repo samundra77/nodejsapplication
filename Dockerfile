@@ -36,12 +36,10 @@ jobs:
 
     - name: Run Docker container
       run: docker run -d -p 3000:3000 --name my-node-app ${{ secrets.DOCKER_USERNAME }}/my-node-app:latest
+      run: curl -f http://localhost:3000 || exit 1
 
     - name: Wait for the application to start
-      run: sleep 15
-
-    - name: Verify application is running
-      run: curl -f http://localhost:3000 || exit 1
+      run: sleep 15      
 
     - name: Show Docker logs for debugging
       if: failure()
