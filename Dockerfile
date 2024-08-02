@@ -1,46 +1,20 @@
-name: Docker Build and Push
+# Use an official Node.js runtime as the base image
+FROM node:14
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+# Set the working directory
+WORKDIR /usr/src/app
 
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+# Install the application dependencies
+RUN npm install
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+# Copy the rest of the application source code
+COPY . .
 
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+# Expose the application port
+EXPOSE 3000
 
-    - name: Build Docker image
-      run: docker build -t my-node-app .
-
-    - name: Tag Docker image
-      run: docker tag my-node-app ${{ secrets.DOCKER_USERNAME }}/my-node-app:latest
-
-    - name: Push Docker image to DockerHub
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/my-node-app:latest
-
-    - name: Run Docker container
-      run: docker run -d -p 3000:3000 --name my-node-app ${{ secrets.DOCKER_USERNAME }}/my-node-app:latest
-      run: curl -f http://localhost:3000 || exit 1
-
-    - name: Wait for the application to start
-      run: sleep 15      
-
-    - name: Show Docker logs for debugging
-      if: failure()
-      run: docker logs my-node-app
+# Define the command to run the application
+CMD ["node", "index.js"]
